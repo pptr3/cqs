@@ -1,4 +1,5 @@
 import re
+from combination_algorithm import backtrackig_case3
 
 class AssociationAlgorithm():
     
@@ -33,30 +34,6 @@ class AssociationAlgorithm():
             print("THIS SHOULD NOT BE PRINTED MOTHER FUCKER")
 
 
-    # TODO: sort by DATA STATO just in case 3
-    # TODO: we hardcodded 20
-    def backtrackig_case3(self, target, id_ente, pratiche, perfezionamento, sinistro, estinte):
-        candidates = self.get_pratiche_by_ente_and_stato(id_ente, pratiche, perfezionamento=perfezionamento, sinistro=sinistro, estinte=estinte)
-        if len(candidates) > 20: # TODO: to dehardcodde
-            return ["greater_than_20"]
-        # NOTE: we consider only candiates with len <= 20
-        # We cut off IMPORTO_RATA that is greater than the input "target" because if IMPORTO_RATA is greater, we will never be able to find a combination that matches `target` 
-        candidates = [(candidates['ID_PRATICA'].iloc[i], candidates['IMPORTO_RATA'].iloc[i]) for i in range(len(candidates)) if candidates['IMPORTO_RATA'].iloc[i] < target]
-        ans = []
-        def backtrack(idx, currlist):
-            nonlocal ans
-            if sum([importo for _, importo in currlist]) == target:
-                ans.append(currlist.copy())
-                return
-            if sum([importo for _, importo in currlist]) > target:
-                return
-            for i in range(idx, len(candidates)):
-                currlist.append(candidates[i])
-                backtrack(i+1, currlist)
-                currlist.pop()
-        backtrack(0, [])
-        return ans if ans else None
-
     def get_combinations(self, pratiche_ente, importo_tot, id_ente, pratiche): # NOTE: `pratiche` here is already filtered by "Perfezionamento" in `get_pratiche_by_ente_and_stato()`
         # Caso 1
         filteredpratiche = pratiche_ente[(pratiche_ente['IMPORTO_RATA'] == importo_tot)]
@@ -72,9 +49,9 @@ class AssociationAlgorithm():
         # Caso3
         elif importo_tot != sum_importo_rata:
             self.n_caso3 += 1 
-            combinations_caso3_1 = self.backtrackig_case3(importo_tot, id_ente, pratiche, perfezionamento=True, sinistro=False, estinte=False) # NOTE: we are not passing `pratiche_ente` in `backtrackig_case3()` because we create it inside `backtrackig_case3()`
-            combinations_caso3_2 = self.backtrackig_case3(importo_tot, id_ente, pratiche, perfezionamento=True, sinistro=True, estinte=False) # NOTE: we are not passing `pratiche_ente` in `backtrackig_case3()` because we create it inside `backtrackig_case3()`
-            combinations_caso3_3 = self.backtrackig_case3(importo_tot, id_ente, pratiche, perfezionamento=True, sinistro=True, estinte=True) # NOTE: we are not passing `pratiche_ente` in `backtrackig_case3()` because we create it inside `backtrackig_case3()`
+            combinations_caso3_1 = backtrackig_case3(importo_tot, id_ente, pratiche, perfezionamento=True, sinistro=False, estinte=False) # NOTE: we are not passing `pratiche_ente` in `backtrackig_case3()` because we create it inside `backtrackig_case3()`
+            combinations_caso3_2 = backtrackig_case3(importo_tot, id_ente, pratiche, perfezionamento=True, sinistro=True, estinte=False) # NOTE: we are not passing `pratiche_ente` in `backtrackig_case3()` because we create it inside `backtrackig_case3()`
+            combinations_caso3_3 = backtrackig_case3(importo_tot, id_ente, pratiche, perfezionamento=True, sinistro=True, estinte=True) # NOTE: we are not passing `pratiche_ente` in `backtrackig_case3()` because we create it inside `backtrackig_case3()`
             if not combinations_caso3_1 and not combinations_caso3_2 and not combinations_caso3_3:
                 self.association_caso3_does_not_exist += 1
                 return None, "caso3"
